@@ -1,9 +1,9 @@
-#ifndef FIRMWARE_H
-#define FIRMWARE_H
+#ifndef FIRMWAREDATA_H
+#define FIRMWAREDATA_H
 
 #include <cstdint>
 
-class Firmware
+class FirmwareData
 {
     public:
         uint32_t address;

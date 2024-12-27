@@ -5,7 +5,7 @@
 #include "messages.h"
 #include "out.h"
 
-const uint16_t CanFlasher::HEARTBEAT_TIME = 50;
+const static uint16_t HEARTBEAT_TIME = 50;
 
 const uint8_t MODULE_NODE_ID = 125;
 
@@ -37,7 +37,7 @@ bool CanFlasher::connect( uint32_t timeoutTime )
 		{
             if ( canopen.checkHeartbeat(frame.value(), MODULE_NODE_ID ) )
             {
-                if ( setStatus(IFlasher::STATUS_REG_VALUE::IN_BOOT) )
+                if ( setStatusRegister(ISerialFlasher::STATUS_REG_VALUE::STAY_IN_BOOT) )
                 {
                     return true;
                 } 
@@ -48,45 +48,45 @@ bool CanFlasher::connect( uint32_t timeoutTime )
     return false;
 }
 
-IFlasher::STATUS_FLASH CanFlasher::flash( std::vector<Firmware> firmware )
+ISerialFlasher::STATUS_FLASHING CanFlasher::flash( std::vector<FirmwareData> firmware )
 {
     std::optional<uint8_t> status;
     status = std::nullopt;
-    std::vector<Firmware>::iterator iterator = firmware.begin();
+    std::vector<FirmwareData>::iterator iterator = firmware.begin();
 
     int countFirmware = 0;
 
     while ( iterator != firmware.end() )
     {
-        std::optional<uint8_t> status = getStatus();
+        std::optional<uint8_t> status = getStatusRegister();
         if ( !status.has_value() )
         {
             continue;
         }
 
-        if ( !( status.value() == IFlasher::STATUS_REG_VALUE::IN_BOOT ) )
+        if ( !( status.value() == ISerialFlasher::STATUS_REG_VALUE::STAY_IN_BOOT ) )
         {
             if ( !(status.value() & 0b00011100) )
             {
                 continue;
             }
 
-            if ( status.value() & IFlasher::STATUS_REG_VALUE::ERROR_WRITE_IN_BOOT )
+            if ( status.value() & ISerialFlasher::STATUS_REG_VALUE::ERROR_WRITE_IN_BOOT )
             {
                 std::cout << std::endl;
-                return IFlasher::STATUS_FLASH::STATUS_ERROR_WRITE_IN_BOOT;
+                return ISerialFlasher::STATUS_FLASHING::STATUS_ERROR_WRITE_IN_BOOT;
             }
 
-            if ( status.value() & IFlasher::STATUS_REG_VALUE::ERROR_ERASE )
+            if ( status.value() & ISerialFlasher::STATUS_REG_VALUE::ERROR_ERASE )
             {
                 std::cout << std::endl;
-                return IFlasher::STATUS_FLASH::STATUS_ERROR_ERASE;
+                return ISerialFlasher::STATUS_FLASHING::STATUS_ERROR_ERASE;
             }
 
-            if ( status.value() & IFlasher::STATUS_REG_VALUE::ERROR_WRITE )
+            if ( status.value() & ISerialFlasher::STATUS_REG_VALUE::ERROR_WRITE )
             {
                 std::cout << std::endl;
-                return IFlasher::STATUS_FLASH::STATUS_ERROR_WRITE;
+                return ISerialFlasher::STATUS_FLASHING::STATUS_ERROR_WRITE;
             }
         }
 
@@ -122,7 +122,7 @@ IFlasher::STATUS_FLASH CanFlasher::flash( std::vector<Firmware> firmware )
             continue;
         };
 
-        if ( !setStatus(IFlasher::STATUS_REG_VALUE::NEW_MACHINE_WORD) )
+        if ( !setStatusRegister(ISerialFlasher::STATUS_REG_VALUE::NEW_DATA) )
         {
             continue;
         }
@@ -134,10 +134,10 @@ IFlasher::STATUS_FLASH CanFlasher::flash( std::vector<Firmware> firmware )
     printProgressBar( countFirmware, msg::PREFIX_PROGRESSBAR + std::to_string(countFirmware) + " / " + std::to_string(firmware.size()), static_cast<int>( firmware.size() ));
     canopen.writeSDO(MODULE_NODE_ID, STATUS_REG_INDEX, STATUS_REG_SUBINDEX, {0});
     std::cout << std::endl;
-    return IFlasher::STATUS_FLASH::STATUS_DONE;
+    return ISerialFlasher::STATUS_FLASHING::STATUS_SUCCESS;
 }
 
-std::optional<uint8_t> CanFlasher::getStatus()
+std::optional<uint8_t> CanFlasher::getStatusRegister()
 {
     std::optional<std::vector<uint8_t>> statusRegister = canopen.readSDO( MODULE_NODE_ID, STATUS_REG_INDEX, STATUS_REG_SUBINDEX, 1 );
     if ( statusRegister.has_value() )
@@ -151,7 +151,7 @@ std::optional<uint8_t> CanFlasher::getStatus()
     }
 }
 
-bool CanFlasher::setStatus(IFlasher::STATUS_REG_VALUE status) 
+bool CanFlasher::setStatusRegister(ISerialFlasher::STATUS_REG_VALUE status) 
 {
     std::optional<std::vector<uint8_t>> statusRegister = canopen.readSDO( MODULE_NODE_ID, STATUS_REG_INDEX, STATUS_REG_SUBINDEX, 1 );
     if ( statusRegister.has_value() )
