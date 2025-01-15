@@ -63,15 +63,6 @@ std::optional<std::vector<FirmwareData>> getParsedFirmware()
     return ptrParser->parseFirmware();
 }
 
-std::unique_ptr<IParserFirmware> getFirmware( Settings::TYPE_FIRMWARE type )
-{
-	if ( type == Settings::TYPE_FIRMWARE::HEX )
-	{
-		return std::make_unique<HexParserFirmware>();
-	}
-	return nullptr;
-}
-
 std::unique_ptr<ISerialFlasher> getSerialFlasher( Settings::TYPE_INTERFACE interface )
 {
 	if ( interface == Settings::TYPE_INTERFACE::CAN )
