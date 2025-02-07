@@ -43,15 +43,17 @@ namespace msg
 	inline const std::string help
     {
         "Использование\n\n"
-        "   sudo ./flasher --exec [options] path=<path-to-firmware>\n\n"
+        "   sudo ./Flasher --exec [options] path=path_to_firmware\n\n"
         "Укажите путь до прошивки. Запустите программу, выключите и включите модуль.\n\n"
         "Опции:\n"
         "   --help                          вывод команд и инструкции\n"
         "   --exec                          выполнить прошивку\n"
         "   --can                           используется CAN-интерфейс (по умолчанию)\n\n"
         "Параметры:\n"
-        "   --path=<path-to-firmware>       путь (абсолютный или относительный) до прошивки\n"
-        "   --timeout=<value>               время ожидания соединения с модулем (в секундах). По умолчанию 180 секунд."
+        "   --path=path_to_firmware       путь (абсолютный или относительный) до прошивки\n"
+        "   --timeout=<value>               время ожидания соединения с модулем (в секундах). По умолчанию 180 секунд.\n"
+		"Пример вызова (CAN-интерфейс, hex - hex/name_hex.hex, время ожидания подключения - 300 секунд):\n"
+		"	sudo ./Flasher --exec --can --path=hex/name_hex.hex --timeout=300"
     };
 }
 
